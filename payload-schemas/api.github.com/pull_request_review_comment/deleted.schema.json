@@ -57,7 +57,7 @@
         "locked": { "type": "boolean" },
         "title": { "type": "string" },
         "user": { "$ref": "common/user.schema.json" },
-        "body": { "type": "string" },
+        "body": { "type": ["string", "null"] },
         "created_at": { "type": "string" },
         "updated_at": { "type": "string" },
         "closed_at": { "type": ["string", "null"] },
