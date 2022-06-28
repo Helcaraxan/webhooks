@@ -191,6 +191,7 @@ export type WebhookEvents =
       | "package"
       | "page_build"
       | "project"
+      | "projects_v2_item"
       | "project_card"
       | "project_column"
       | "public"
@@ -205,6 +206,8 @@ export type WebhookEvents =
       | "repository_import"
       | "repository_vulnerability_alert"
       | "secret_scanning_alert"
+      | "secret_scanning_alert_location"
+      | "security_and_analysis"
       | "star"
       | "status"
       | "team"
@@ -567,6 +570,7 @@ export interface Repository {
   allow_update_branch?: boolean;
   use_squash_pr_title_as_default?: boolean;
   is_template: boolean;
+  web_commit_signoff_required: boolean;
   topics: string[];
   visibility: "public" | "private" | "internal";
   /**
@@ -860,6 +864,7 @@ export interface App {
     issues?: "read" | "write";
     keys?: "read" | "write";
     members?: "read" | "write";
+    merge_queues?: "read" | "write";
     metadata?: "read" | "write";
     organization_administration?: "read" | "write";
     organization_hooks?: "read" | "write";
@@ -909,11 +914,14 @@ export interface App {
     | "label"
     | "member"
     | "membership"
+    | "merge_group"
+    | "merge_queue_entry"
     | "milestone"
     | "organization"
     | "org_block"
     | "page_build"
     | "project"
+    | "projects_v2_item"
     | "project_card"
     | "project_column"
     | "public"
@@ -926,6 +934,8 @@ export interface App {
     | "repository"
     | "repository_dispatch"
     | "secret_scanning_alert"
+    | "secret_scanning_alert_location"
+    | "security_and_analysis"
     | "star"
     | "status"
     | "team"
@@ -2189,6 +2199,15 @@ export interface DeploymentWorkflowRun {
   triggering_actor: User;
   run_attempt: number;
   run_started_at: string;
+  referenced_workflows?: ReferencedWorkflow[];
+}
+/**
+ * A workflow referenced/reused by the initial caller workflow
+ */
+export interface ReferencedWorkflow {
+  path: string;
+  sha: string;
+  ref?: string;
 }
 export interface DeploymentStatusCreatedEvent {
   action: "created";
@@ -4050,7 +4069,7 @@ export interface PingEvent {
    * The [webhook configuration](https://docs.github.com/en/rest/reference/repos#get-a-repository-webhook).
    */
   hook: {
-    type: string;
+    type: "Repository" | "Organization";
     id: number;
     name: string;
     active: boolean;
@@ -4807,7 +4826,7 @@ export interface SimplePullRequest {
   locked: boolean;
   title: string;
   user: User;
-  body: string;
+  body: string | null;
   created_at: string;
   updated_at: string;
   closed_at: string | null;
@@ -4949,7 +4968,7 @@ export interface PullRequestReviewCommentCreatedEvent {
     locked: boolean;
     title: string;
     user: User;
-    body: string;
+    body: string | null;
     created_at: string;
     updated_at: string;
     closed_at: string | null;
@@ -5111,7 +5130,7 @@ export interface PullRequestReviewCommentDeletedEvent {
     locked: boolean;
     title: string;
     user: User;
-    body: string;
+    body: string | null;
     created_at: string;
     updated_at: string;
     closed_at: string | null;
@@ -5189,7 +5208,7 @@ export interface PullRequestReviewCommentEditedEvent {
     locked: boolean;
     title: string;
     user: User;
-    body: string;
+    body: string | null;
     created_at: string;
     updated_at: string;
     closed_at: string | null;
@@ -6404,6 +6423,7 @@ export interface WorkflowRun {
   workflow_id: number;
   workflow_url: string;
   run_attempt: number;
+  referenced_workflows?: ReferencedWorkflow[];
   run_started_at: string;
   previous_attempt_url: string | null;
   actor: User;
